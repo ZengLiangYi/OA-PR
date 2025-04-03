@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教育智能OA系统 - 移动端原型</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- No Scrollbars CSS -->
+    <link rel="stylesheet" href="css/no-scrollbars.css">
+    <style>
+        body {
+            background-color: #f5f5f7;
+        }
+
+        .iphone-frame {
+            width: 390px;
+            height: 844px;
+            background-color: #fff;
+            border-radius: 54px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            position: relative;
+            margin: 50px auto;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .prototype-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body class="p-8">
+    <h1 class="text-3xl font-bold text-center mb-10">教育智能OA系统 - 移动端原型</h1>
+
+    <div class="flex flex-wrap justify-center gap-8">
+        <!-- Login Screen -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">登录界面</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/login.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">学生端 - 仪表盘</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/student_dashboard.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Student Daily Task -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">学生端 - 今日任务/日报</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/student_daily_task.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Student Notifications -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">学生端 - 预警/通知中心</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/student_notifications.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Leader Dashboard -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">组长端 - 仪表盘</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/leader_dashboard.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Leader Task Assign -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">组长端 - 任务发布</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/leader_task_assign.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Profile -->
+        <div class="flex flex-col items-center">
+            <h2 class="prototype-title">个人中心/设置</h2>
+            <div class="iphone-frame">
+                <iframe class="iframe-container" src="pages/profile.html"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply No Scrollbars Script -->
+    <script src="js/apply-no-scrollbars.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务管理 - 教育智能OA系统</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- No Scrollbars CSS -->
+    <link rel="stylesheet" href="../css/no-scrollbars.css">
+    <style>
+        /* 模拟 iOS 系统字体 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            height: 47px;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            height: 44px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        /* Tab Bar 样式 */
+        .tab-bar {
+            height: 83px;
+            /* 包含底部安全区域 */
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: 34px;
+            /* 底部安全区域 */
+        }
+
+        /* iOS 风格卡片 */
+        .ios-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            height: calc(100vh - 47px - 44px - 83px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 聊天气泡 - AI */
+        .chat-bubble-ai {
+            max-width: 80%;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            padding: 12px 16px;
+            background-color: #f1f1f1;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        /* 聊天气泡 - 用户 */
+        .chat-bubble-user {
+            max-width: 80%;
+            border-radius: 18px;
+            border-top-right-radius: 4px;
+            padding: 12px 16px;
+            background-color: #0b84fe;
+            color: white;
+            margin-bottom: 16px;
+            align-self: flex-end;
+            position: relative;
+        }
+
+        /* 聊天时间标签 */
+        .chat-time {
+            text-align: center;
+            font-size: 12px;
+            color: #8e8e93;
+            margin: 8px 0;
+        }
+
+        /* 聊天输入框容器 */
+        .chat-input-container {
+            padding: 10px 16px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 聊天输入框 */
+        .chat-input {
+            flex: 1;
+            border-radius: 20px;
+            background-color: #ffffff;
+            border: 1px solid #e1e1e1;
+            padding: 8px 14px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        /* AI提议气泡 */
+        .suggestion-bubble {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #f1f1f1;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        /* 任务卡片 */
+        .task-card {
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            margin-top: 8px;
+            padding: 12px;
+            border: 1px solid #e1e1e1;
+        }
+
+        /* 学生选择器 */
+        .student-selector {
+            display: flex;
+            overflow-x: auto;
+            padding: 6px 0;
+            margin-top: 8px;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        .student-selector::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+
+        .student-chip {
+            min-width: fit-content;
+            padding: 4px 10px;
+            background-color: #e1e1e1;
+            border-radius: 14px;
+            margin-right: 6px;
+            font-size: 13px;
+        }
+
+        .student-chip.selected {
+            background-color: #0b84fe;
+            color: white;
+        }
+
+        /* 打字指示器 */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #c0c0c0;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 3px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+            margin-right: 0;
+        }
+
+        @keyframes typing {
+            0% {
+                transform: translateY(0px);
+                background-color: #c0c0c0;
+            }
+
+            28% {
+                transform: translateY(-5px);
+                background-color: #8e8e93;
+            }
+
+            44% {
+                transform: translateY(0px);
+                background-color: #c0c0c0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white h-full">
+    <!-- 状态栏 -->
+    <div class="status-bar px-6 flex items-center justify-between">
+        <div class="text-sm font-semibold">9:41</div>
+        <div class="flex space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar px-4 flex items-center justify-between">
+        <div class="w-8 text-blue-500">
+            <a href="leader_dashboard.html">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        <div class="font-semibold text-lg">AI学习任务助手</div>
+        <div class="w-8 text-blue-500">
+            <i class="fas fa-ellipsis-h"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 - 聊天界面 -->
+    <div class="content-area">
+        <!-- 聊天历史 -->
+        <div class="flex-1 overflow-y-auto pb-4 px-4" id="chat-history">
+            <!-- 日期分隔 -->
+            <div class="chat-time">今天 14:35</div>
+
+            <!-- AI欢迎消息 -->
+            <div class="flex items-start">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
+                    <i class="fas fa-robot text-blue-500 text-sm"></i>
+                </div>
+                <div class="chat-bubble-ai">
+                    <p>您好，李教授！我是您的AI学习任务助手。我可以帮您:</p>
+                    <ul class="list-disc pl-5 mt-2">
+                        <li>为学生创建个性化学习计划</li>
+                        <li>调整现有任务的难度和时间</li>
+                        <li>基于学生的学习情况提供建议</li>
+                        <li>生成学习进度报告</li>
+                    </ul>
+                    <p class="mt-2">请告诉我您想要做什么？</p>
+                </div>
+            </div>
+
+            <!-- AI建议操作 -->
+            <div class="ml-10 mb-4">
+                <div class="suggestion-bubble" onclick="sendMessage('为全组创建学习计划')">为全组创建学习计划</div>
+                <div class="suggestion-bubble" onclick="sendMessage('为落后学生调整任务')">为落后学生调整任务</div>
+                <div class="suggestion-bubble" onclick="sendMessage('生成本周进度报告')">生成本周进度报告</div>
+            </div>
+
+            <!-- 用户消息 -->
+            <div class="flex justify-end">
+                <div class="chat-bubble-user">
+                    我想为张立同学创建一个针对性的学习计划，他最近在数据库课程方面进度落后。
+                </div>
+            </div>
+
+            <!-- AI回复 -->
+            <div class="flex items-start">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
+                    <i class="fas fa-robot text-blue-500 text-sm"></i>
+                </div>
+                <div class="chat-bubble-ai">
+                    <p>我已查看张立同学的学习数据，他在数据库系统原理课程的进度确实落后，当前完成率仅为45%。</p>
+                    <p class="mt-2">根据他的学习情况，我建议制定以下计划:</p>
+
+                    <!-- 任务卡片 -->
+                    <div class="task-card">
+                        <div class="font-medium">数据库系统原理 - 补充学习计划</div>
+                        <div class="text-sm text-gray-500 mt-1">为期7天，每日1-2小时</div>
+
+                        <div class="mt-3">
+                            <div class="text-sm mb-1"><strong>Day 1-2:</strong> 复习关系数据库基础与SQL语法</div>
+                            <div class="text-sm mb-1"><strong>Day 3-4:</strong> 数据库设计与范式理论</div>
+                            <div class="text-sm mb-1"><strong>Day 5-6:</strong> 事务处理与并发控制</div>
+                            <div class="text-sm mb-1"><strong>Day 7:</strong> 综合练习与知识点巩固</div>
+                        </div>
+
+                        <div class="mt-3 text-sm">
+                            <div class="font-medium mb-1">分配给:</div>
+                            <div class="student-selector">
+                                <div class="student-chip selected">张立</div>
+                                <div class="student-chip">王洋</div>
+                                <div class="student-chip">刘畅</div>
+                                <div class="student-chip">赵明</div>
+                                <div class="student-chip">黄佳</div>
+                                <div class="student-chip">李想</div>
+                                <div class="student-chip">郑华</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mt-3">您觉得这个计划如何？我可以根据您的反馈进行调整。</p>
+                </div>
+            </div>
+
+            <!-- 用户消息 -->
+            <div class="flex justify-end">
+                <div class="chat-bubble-user">
+                    看起来不错。能否在Day 5-6增加一些数据库索引优化的内容？他在这方面也比较薄弱。
+                </div>
+            </div>
+
+            <!-- AI正在输入提示 -->
+            <div class="flex items-start">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
+                    <i class="fas fa-robot text-blue-500 text-sm"></i>
+                </div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 输入框区域 -->
+        <div class="chat-input-container">
+            <button class="p-2 text-gray-500">
+                <i class="fas fa-plus-circle"></i>
+            </button>
+            <input type="text" class="chat-input" placeholder="输入消息..." id="message-input">
+            <button class="p-2 text-blue-500" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 底部 Tab Bar -->
+    <div class="tab-bar flex items-center justify-around px-4">
+        <a href="leader_dashboard.html" class="flex flex-col items-center">
+            <i class="fas fa-chart-bar text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">仪表盘</span>
+        </a>
+        <a href="leader_task_assign.html" class="flex flex-col items-center">
+            <i class="fas fa-robot text-blue-500"></i>
+            <span class="text-xs mt-1 text-blue-500">任务管理</span>
+        </a>
+        <a href="student_notifications.html" class="flex flex-col items-center">
+            <i class="fas fa-bell text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">通知</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center">
+            <i class="fas fa-user text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 在页面加载时自动滚动到底部
+        document.addEventListener('DOMContentLoaded', function () {
+            scrollToBottom();
+        });
+
+        // 发送消息函数
+        function sendMessage(predefinedMessage = null) {
+            const messageInput = document.getElementById('message-input');
+            const chatHistory = document.getElementById('chat-history');
+
+            // 获取消息内容
+            let messageText = predefinedMessage;
+            if (!messageText) {
+                messageText = messageInput.value.trim();
+                if (!messageText) return; // 如果没有内容则不发送
+            }
+
+            // 创建用户消息气泡
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble-user';
+            userBubble.textContent = messageText;
+
+            // 添加到聊天记录
+            chatHistory.appendChild(userBubble);
+
+            // 清空输入框
+            messageInput.value = '';
+
+            // 滚动到底部
+            scrollToBottom();
+
+            // 模拟AI响应 (在实际应用中会是AJAX请求)
+            setTimeout(() => {
+                // 创建"正在输入"指示器
+                const typingContainer = document.createElement('div');
+                typingContainer.className = 'flex items-start';
+                typingContainer.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
+                        <i class="fas fa-robot text-blue-500 text-sm"></i>
+                    </div>
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                chatHistory.appendChild(typingContainer);
+                scrollToBottom();
+
+                // 2秒后显示AI回复
+                setTimeout(() => {
+                    // 移除"正在输入"指示器
+                    chatHistory.removeChild(typingContainer);
+
+                    // 根据用户消息创建AI回复
+                    let aiResponse = '';
+                    if (messageText.includes('索引优化')) {
+                        aiResponse = `
+                            <p>非常好的建议！我已经调整了计划，在Day 5-6增加了数据库索引优化的内容：</p>
+                            
+                            <div class="task-card">
+                                <div class="font-medium">数据库系统原理 - 补充学习计划 (已调整)</div>
+                                <div class="text-sm text-gray-500 mt-1">为期7天，每日1-2小时</div>
+                                
+                                <div class="mt-3">
+                                    <div class="text-sm mb-1"><strong>Day 1-2:</strong> 复习关系数据库基础与SQL语法</div>
+                                    <div class="text-sm mb-1"><strong>Day 3-4:</strong> 数据库设计与范式理论</div>
+                                    <div class="text-sm mb-1"><strong>Day 5-6:</strong> 事务处理、并发控制<span class="text-blue-500 font-medium">与索引优化技术</span></div>
+                                    <div class="text-sm mb-1"><strong>Day 7:</strong> 综合练习与知识点巩固</div>
+                                </div>
+                                
+                                <div class="mt-3 text-sm">
+                                    <div class="font-medium mb-1">分配给:</div>
+                                    <div class="student-selector">
+                                        <div class="student-chip selected">张立</div>
+                                        <div class="student-chip">王洋</div>
+                                        <div class="student-chip">刘畅</div>
+                                        <div class="student-chip">赵明</div>
+                                        <div class="student-chip">黄佳</div>
+                                        <div class="student-chip">李想</div>
+                                        <div class="student-chip">郑华</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="mt-3">我还为他准备了额外的索引优化练习材料和实例分析。您觉得这个调整后的计划可以了吗？</p>
+                        `;
+                    } else {
+                        aiResponse = `
+                            <p>抱歉，我可能没理解您的需求。您是想针对张立同学的学习计划做哪方面的调整呢？</p>
+                            <p class="mt-2">我可以帮您:</p>
+                            <ul class="list-disc pl-5 mt-1">
+                                <li>调整学习内容的难度和顺序</li>
+                                <li>修改学习任务的时间安排</li>
+                                <li>为特定的知识点添加更多练习</li>
+                                <li>增加额外的学习资源</li>
+                            </ul>
+                        `;
+                    }
+
+                    // 创建AI消息气泡
+                    const aiBubbleContainer = document.createElement('div');
+                    aiBubbleContainer.className = 'flex items-start';
+                    aiBubbleContainer.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
+                            <i class="fas fa-robot text-blue-500 text-sm"></i>
+                        </div>
+                        <div class="chat-bubble-ai">
+                            ${aiResponse}
+                        </div>
+                    `;
+
+                    // 添加到聊天记录
+                    chatHistory.appendChild(aiBubbleContainer);
+
+                    // 滚动到底部
+                    scrollToBottom();
+                }, 2000);
+            }, 500);
+        }
+
+        // 滚动到底部
+        function scrollToBottom() {
+            const chatHistory = document.getElementById('chat-history');
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // 回车键发送消息
+        document.getElementById('message-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+
+</html>

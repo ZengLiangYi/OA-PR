@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日任务/日报 - 教育智能OA系统</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 模拟 iOS 系统字体 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            height: 47px;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            height: 44px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        /* Tab Bar 样式 */
+        .tab-bar {
+            height: 83px;
+            /* 包含底部安全区域 */
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: 34px;
+            /* 底部安全区域 */
+        }
+
+        /* iOS 风格卡片 */
+        .ios-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* iOS 风格列表项 */
+        .ios-list-item {
+            padding: 16px;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            height: calc(100vh - 47px - 44px - 83px);
+            overflow-y: auto;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        .content-area::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+
+        /* iOS 风格输入框 */
+        .ios-input {
+            border-radius: 10px;
+            border: 1px solid #e1e1e1;
+            background-color: #f9f9f9;
+            padding: 16px;
+            font-size: 17px;
+        }
+
+        /* iOS 风格按钮 */
+        .ios-button {
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        /* iOS 分段控制器 */
+        .segmented-control {
+            display: flex;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            padding: 2px;
+        }
+
+        .segmented-control-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #666;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .segmented-control-option.active {
+            background-color: #fff;
+            color: #000;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 任务完成切换开关 */
+        .task-toggle {
+            position: relative;
+            width: 51px;
+            height: 31px;
+            background: #e9e9ea;
+            border-radius: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .task-toggle.checked {
+            background: #34c759;
+        }
+
+        .task-toggle:before {
+            content: '';
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+
+        .task-toggle.checked:before {
+            left: 22px;
+        }
+
+        /* AI反馈区域 */
+        .ai-feedback {
+            border-radius: 12px;
+            border-top-left-radius: 2px;
+            background-color: #f1f8ff;
+            padding: 15px;
+            position: relative;
+        }
+
+        .ai-feedback:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -8px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid #f1f8ff;
+            border-left: 8px solid transparent;
+        }
+
+        /* 上传按钮 */
+        .upload-button {
+            border: 1px dashed #d1d5db;
+            border-radius: 10px;
+            background-color: #f9fafb;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* 任务过滤器 */
+        .task-filter {
+            display: flex;
+            margin-bottom: 12px;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .task-filter-option {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-filter-option.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        /* 任务项样式 */
+        .task-item {
+            padding: 16px;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s, background-color 0.3s;
+        }
+
+        .task-item.completed .task-content {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        .task-item.completed .task-time {
+            color: #9ca3af;
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-checkbox.checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .task-checkbox i {
+            color: white;
+            font-size: 10px;
+            display: none;
+        }
+
+        .task-checkbox.checked i {
+            display: block;
+        }
+
+        /* 添加任务样式 */
+        .add-task-container {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .add-task-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            margin-left: 6px;
+            outline: none;
+        }
+
+        .add-task-button {
+            color: #3b82f6;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* 底部任务统计 */
+        .task-stats {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            color: #6b7280;
+            font-size: 13px;
+            border-top: 1px solid #f1f1f1;
+        }
+
+        /* 清除已完成任务按钮 */
+        .clear-completed {
+            cursor: pointer;
+            color: #3b82f6;
+        }
+
+        /* 任务列表容器 */
+        #task-list {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        #task-list::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+
+        /* 全局滚动条隐藏 */
+        * {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 h-full">
+    <!-- 状态栏 -->
+    <div class="status-bar px-6 flex items-center justify-between bg-white">
+        <div class="text-sm font-semibold">9:41</div>
+        <div class="flex space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar px-4 flex items-center justify-between bg-white">
+        <div class="w-8"></div>
+        <div class="font-semibold text-lg">今日任务/日报</div>
+        <div class="w-8 text-blue-500">
+            <i class="fas fa-history"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content-area px-4 py-3">
+        <!-- 分段控制器: 任务/日报 -->
+        <div class="segmented-control mb-4">
+            <div class="segmented-control-option active" id="task-option">今日任务</div>
+            <div class="segmented-control-option" id="report-option">日报表单</div>
+        </div>
+
+        <!-- 任务部分 -->
+        <div id="tasks-container">
+            <!-- 任务进度概览 -->
+            <div class="ios-card p-4 mb-4">
+                <div class="flex space-x-4 items-center">
+                    <div class="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="text-white text-xl font-bold" id="task-completion-ratio">3/5</span>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-base">今日任务完成度</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div class="bg-blue-500 h-2.5 rounded-full" id="task-progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500 mt-3" id="tasks-remaining-text">
+                    今天还有 2 个任务需要完成
+                </div>
+            </div>
+
+            <!-- 今日任务列表 -->
+            <h3 class="font-semibold text-lg mb-3">今日任务清单</h3>
+            <div class="ios-card mb-4">
+                <!-- 任务过滤器 -->
+                <div class="task-filter mx-4 mt-4">
+                    <div class="task-filter-option active" data-filter="all">全部</div>
+                    <div class="task-filter-option" data-filter="active">未完成</div>
+                    <div class="task-filter-option" data-filter="completed">已完成</div>
+                </div>
+
+                <!-- 添加任务 -->
+                <div class="add-task-container">
+                    <div class="task-checkbox">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <input type="text" class="add-task-input" placeholder="添加新任务..." id="new-task-input">
+                    <div class="add-task-button" id="add-task-btn">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+
+                <!-- 任务列表容器 -->
+                <div id="task-list">
+                    <!-- 任务项会通过JS动态生成 -->
+                </div>
+
+                <!-- 任务统计 -->
+                <div class="task-stats">
+                    <span id="tasks-count">5 个任务</span>
+                    <span class="clear-completed" id="clear-completed-btn">清除已完成</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日报部分 -->
+        <div id="report-container" class="hidden">
+            <div class="ios-card p-4 mb-4">
+                <h3 class="font-semibold text-lg mb-4">今日学习日报</h3>
+
+                <form>
+                    <!-- 日期 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">日期</label>
+                        <div class="ios-input w-full bg-gray-50 text-gray-500">2023年6月14日 星期三</div>
+                    </div>
+
+                    <!-- 今日完成情况 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">今日完成情况</label>
+                        <textarea class="ios-input w-full" rows="4" placeholder="描述今天的学习内容和完成情况..."></textarea>
+                    </div>
+
+                    <!-- 遇到的问题 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">遇到的问题</label>
+                        <textarea class="ios-input w-full" rows="3" placeholder="描述学习中遇到的问题或困难..."></textarea>
+                    </div>
+
+                    <!-- 明日计划 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">明日计划</label>
+                        <textarea class="ios-input w-full" rows="3" placeholder="描述明天的学习计划..."></textarea>
+                    </div>
+
+                    <!-- 附件上传 -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">上传附件</label>
+                        <div class="upload-button">
+                            <i class="fas fa-cloud-upload-alt text-2xl text-blue-500 mb-2"></i>
+                            <span class="text-sm text-gray-500">点击上传文件</span>
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <button type="button" class="ios-button w-full bg-blue-500 text-white" onclick="showAIFeedback()">
+                        提交日报
+                    </button>
+                </form>
+            </div>
+
+            <!-- AI智能点评反馈 (初始隐藏) -->
+            <div id="ai-feedback-area" class="mb-4 hidden">
+                <div class="flex items-start mb-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
+                        <i class="fas fa-robot text-blue-500"></i>
+                    </div>
+                    <div class="ai-feedback">
+                        <div class="font-medium mb-1">AI助教点评</div>
+                        <p class="text-sm">
+                            你今天的学习任务完成得很好！通过数据结构和Java编程的练习，你的编程能力正在稳步提升。
+                        </p>
+                        <p class="text-sm mt-2">
+                            建议在复习计算机网络时多关注协议层次结构的理解，这将有助于你更好地掌握网络知识体系。
+                        </p>
+                        <p class="text-sm mt-2">
+                            对于明天的任务，建议先完成数据库系统原理的复习，再进行其他学习任务，这样可以更有效地分配时间。
+                        </p>
+                        <div class="mt-3 text-xs text-gray-500">
+                            2023-06-14 17:30 生成
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 Tab Bar -->
+    <div class="tab-bar flex items-center justify-around px-4">
+        <a href="student_dashboard.html" class="flex flex-col items-center">
+            <i class="fas fa-chart-bar text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">仪表盘</span>
+        </a>
+        <a href="student_daily_task.html" class="flex flex-col items-center">
+            <i class="fas fa-tasks text-blue-500"></i>
+            <span class="text-xs mt-1 text-blue-500">今日任务</span>
+        </a>
+        <a href="student_notifications.html" class="flex flex-col items-center">
+            <i class="fas fa-bell text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">通知</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center">
+            <i class="fas fa-user text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 切换任务和日报视图
+        const taskOption = document.getElementById('task-option');
+        const reportOption = document.getElementById('report-option');
+        const tasksContainer = document.getElementById('tasks-container');
+        const reportContainer = document.getElementById('report-container');
+
+        taskOption.addEventListener('click', function () {
+            taskOption.classList.add('active');
+            reportOption.classList.remove('active');
+            tasksContainer.classList.remove('hidden');
+            reportContainer.classList.add('hidden');
+        });
+
+        reportOption.addEventListener('click', function () {
+            reportOption.classList.add('active');
+            taskOption.classList.remove('active');
+            reportContainer.classList.remove('hidden');
+            tasksContainer.classList.add('hidden');
+        });
+
+        // 提交日报后显示AI反馈
+        function showAIFeedback() {
+            document.getElementById('ai-feedback-area').classList.remove('hidden');
+            // 滚动到反馈区域
+            document.getElementById('ai-feedback-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // TodoList 功能实现
+        document.addEventListener('DOMContentLoaded', function () {
+            // 初始任务数据
+            const tasks = [
+                { id: 1, content: "阅读数据结构第4章并完成课后习题", time: "预计用时: 60分钟", completed: true },
+                { id: 2, content: "完成Java编程练习: 实现链表反转", time: "预计用时: 45分钟", completed: true },
+                { id: 3, content: "复习计算机网络第5章内容", time: "预计用时: 30分钟", completed: true },
+                { id: 4, content: "观看机器学习视频课程: 决策树模型", time: "预计用时: 60分钟", completed: false },
+                { id: 5, content: "准备周五组内算法讨论分享内容", time: "预计用时: 90分钟", completed: false }
+            ];
+
+            // 当前过滤器状态
+            let currentFilter = 'all';
+
+            // DOM元素
+            const taskList = document.getElementById('task-list');
+            const taskCompletionRatio = document.getElementById('task-completion-ratio');
+            const taskProgressBar = document.getElementById('task-progress-bar');
+            const tasksRemainingText = document.getElementById('tasks-remaining-text');
+            const tasksCount = document.getElementById('tasks-count');
+            const newTaskInput = document.getElementById('new-task-input');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const clearCompletedBtn = document.getElementById('clear-completed-btn');
+            const filterOptions = document.querySelectorAll('.task-filter-option');
+
+            // 渲染任务列表
+            function renderTasks() {
+                // 清空任务列表
+                taskList.innerHTML = '';
+
+                // 过滤任务
+                const filteredTasks = tasks.filter(task => {
+                    if (currentFilter === 'all') return true;
+                    if (currentFilter === 'active') return !task.completed;
+                    if (currentFilter === 'completed') return task.completed;
+                });
+
+                // 渲染过滤后的任务
+                filteredTasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                    taskItem.dataset.id = task.id;
+
+                    taskItem.innerHTML = `
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium task-content">${task.content}</div>
+                            <div class="text-xs text-gray-500 mt-1 task-time">
+                                <i class="far fa-clock mr-1"></i> ${task.time}
+                            </div>
+                        </div>
+                        <div class="ml-2 text-red-500 cursor-pointer" onclick="deleteTask(${task.id})">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    `;
+
+                    taskList.appendChild(taskItem);
+                });
+
+                // 更新任务计数
+                updateTaskStats();
+            }
+
+            // 更新任务统计信息
+            function updateTaskStats() {
+                const completedCount = tasks.filter(task => task.completed).length;
+                const totalCount = tasks.length;
+                const remainingCount = totalCount - completedCount;
+
+                // 更新比率
+                taskCompletionRatio.textContent = `${completedCount}/${totalCount}`;
+
+                // 更新进度条
+                const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+                taskProgressBar.style.width = `${completionPercentage}%`;
+
+                // 更新剩余文本
+                tasksRemainingText.textContent = `今天还有 ${remainingCount} 个任务需要完成`;
+
+                // 更新总数
+                tasksCount.textContent = `${totalCount} 个任务`;
+            }
+
+            // 切换任务完成状态
+            window.toggleTask = function (id) {
+                const taskIndex = tasks.findIndex(task => task.id === id);
+                if (taskIndex !== -1) {
+                    tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                    renderTasks();
+                }
+            };
+
+            // 删除任务
+            window.deleteTask = function (id) {
+                const taskIndex = tasks.findIndex(task => task.id === id);
+                if (taskIndex !== -1) {
+                    tasks.splice(taskIndex, 1);
+                    renderTasks();
+                }
+            };
+
+            // 添加新任务
+            addTaskBtn.addEventListener('click', function () {
+                const content = newTaskInput.value.trim();
+                if (content) {
+                    const newTask = {
+                        id: Date.now(),
+                        content: content,
+                        time: "预计用时: 30分钟",
+                        completed: false
+                    };
+                    tasks.push(newTask);
+                    newTaskInput.value = '';
+                    renderTasks();
+                }
+            });
+
+            // 回车键添加任务
+            newTaskInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    addTaskBtn.click();
+                }
+            });
+
+            // 清除已完成任务
+            clearCompletedBtn.addEventListener('click', function () {
+                const activeTasks = tasks.filter(task => !task.completed);
+                tasks.length = 0;
+                tasks.push(...activeTasks);
+                renderTasks();
+            });
+
+            // 过滤器功能
+            filterOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    // 移除所有活跃状态
+                    filterOptions.forEach(opt => opt.classList.remove('active'));
+
+                    // 设置当前选中项为活跃
+                    this.classList.add('active');
+
+                    // 更新过滤器状态
+                    currentFilter = this.dataset.filter;
+
+                    // 重新渲染任务
+                    renderTasks();
+                });
+            });
+
+            // 初始渲染
+            renderTasks();
+        });
+    </script>
+</body>
+
+</html>

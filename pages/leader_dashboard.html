@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组长仪表盘 - 教育智能OA系统</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* 模拟 iOS 系统字体 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            height: 47px;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            height: 44px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        /* Tab Bar 样式 */
+        .tab-bar {
+            height: 83px;
+            /* 包含底部安全区域 */
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: 34px;
+            /* 底部安全区域 */
+        }
+
+        /* iOS 风格卡片 */
+        .ios-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* iOS 风格列表项 */
+        .ios-list-item {
+            padding: 16px;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            height: calc(100vh - 47px - 44px - 83px);
+            overflow-y: auto;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            height: 250px;
+            width: 100%;
+        }
+
+        /* 进度标签 */
+        .progress-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 h-full">
+    <!-- 状态栏 -->
+    <div class="status-bar px-6 flex items-center justify-between bg-white">
+        <div class="text-sm font-semibold">9:41</div>
+        <div class="flex space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar px-4 flex items-center justify-between bg-white">
+        <div class="w-8"></div>
+        <div class="font-semibold text-lg">组长仪表盘</div>
+        <div class="w-8 text-blue-500">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content-area px-4 py-3">
+        <!-- 欢迎信息 -->
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="font-bold text-xl">您好，李教授</h2>
+                <p class="text-gray-500 text-sm">周三，2023年6月14日</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white">
+                <span class="font-semibold">LP</span>
+            </div>
+        </div>
+
+        <!-- 小组概览 -->
+        <div class="ios-card p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold text-base">小组整体概览</h3>
+                <span class="text-blue-500 text-sm">查看详情</span>
+            </div>
+
+            <div class="flex space-x-3 mb-3">
+                <div class="flex-1 bg-blue-50 rounded-lg p-3">
+                    <div class="text-sm text-gray-500 mb-1">组员人数</div>
+                    <div class="flex items-end">
+                        <span class="text-xl font-bold">12</span>
+                    </div>
+                </div>
+                <div class="flex-1 bg-blue-50 rounded-lg p-3">
+                    <div class="text-sm text-gray-500 mb-1">平均完成率</div>
+                    <div class="flex items-end">
+                        <span class="text-xl font-bold">76%</span>
+                        <span class="text-xs text-green-500 ml-1">↑</span>
+                    </div>
+                </div>
+                <div class="flex-1 bg-blue-50 rounded-lg p-3">
+                    <div class="text-sm text-gray-500 mb-1">待处理预警</div>
+                    <div class="flex items-end">
+                        <span class="text-xl font-bold text-red-500">3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 小组学习进度图表 -->
+        <div class="ios-card p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold text-base">小组学习趋势</h3>
+                <div class="flex space-x-2">
+                    <span class="text-xs py-1 px-2 bg-blue-500 text-white rounded-full">周</span>
+                    <span class="text-xs py-1 px-2 bg-gray-200 text-gray-500 rounded-full">月</span>
+                </div>
+            </div>
+
+            <div class="chart-container" id="groupProgressChart"></div>
+        </div>
+
+        <!-- 需要关注的学生 -->
+        <div class="ios-card mb-4">
+            <div class="p-4 border-b border-gray-100">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-base">需要关注的学生</h3>
+                    <span class="text-blue-500 text-sm">查看全部</span>
+                </div>
+            </div>
+
+            <div class="ios-list-item border-b">
+                <div class="mr-3 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <span class="font-medium">ZL</span>
+                </div>
+                <div class="flex-1">
+                    <div class="font-medium">张立</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        近7天任务完成率: 45%，日报已逾期2天
+                    </div>
+                </div>
+                <div class="ml-2">
+                    <span class="progress-badge bg-red-100 text-red-600">
+                        <span class="status-dot bg-red-500"></span>高风险
+                    </span>
+                </div>
+            </div>
+
+            <div class="ios-list-item border-b">
+                <div class="mr-3 w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                    <span class="font-medium">WY</span>
+                </div>
+                <div class="flex-1">
+                    <div class="font-medium">王洋</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        数据库系统课程进度落后，完成率: 58%
+                    </div>
+                </div>
+                <div class="ml-2">
+                    <span class="progress-badge bg-yellow-100 text-yellow-600">
+                        <span class="status-dot bg-yellow-500"></span>中风险
+                    </span>
+                </div>
+            </div>
+
+            <div class="ios-list-item">
+                <div class="mr-3 w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                    <span class="font-medium">LC</span>
+                </div>
+                <div class="flex-1">
+                    <div class="font-medium">刘畅</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        连续3天未提交学习日报
+                    </div>
+                </div>
+                <div class="ml-2">
+                    <span class="progress-badge bg-yellow-100 text-yellow-600">
+                        <span class="status-dot bg-yellow-500"></span>中风险
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习资源使用情况 -->
+        <!-- <div class="ios-card p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold text-base">学习资源使用情况</h3>
+                <span class="text-blue-500 text-sm">详情</span>
+            </div>
+
+            <div class="chart-container" id="resourceUsageChart"></div>
+        </div> -->
+
+        <!-- 快速操作 -->
+        <div class="ios-card p-4 mb-6">
+            <h3 class="font-semibold text-base mb-3">快速操作</h3>
+
+            <div class="grid grid-cols-3 gap-3">
+                <a href="leader_task_assign.html"
+                    class="bg-blue-50 rounded-xl p-3 flex flex-col items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                        <i class="fas fa-tasks text-blue-500"></i>
+                    </div>
+                    <span class="text-xs text-gray-700">任务发布</span>
+                </a>
+
+                <a href="#" class="bg-blue-50 rounded-xl p-3 flex flex-col items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                        <i class="fas fa-comment-alt text-green-500"></i>
+                    </div>
+                    <span class="text-xs text-gray-700">发送通知</span>
+                </a>
+
+                <a href="#" class="bg-blue-50 rounded-xl p-3 flex flex-col items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                        <i class="fas fa-file-export text-purple-500"></i>
+                    </div>
+                    <span class="text-xs text-gray-700">导出报告</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 Tab Bar -->
+    <div class="tab-bar flex items-center justify-around px-4">
+        <a href="leader_dashboard.html" class="flex flex-col items-center">
+            <i class="fas fa-chart-bar text-blue-500"></i>
+            <span class="text-xs mt-1 text-blue-500">仪表盘</span>
+        </a>
+        <a href="leader_task_assign.html" class="flex flex-col items-center">
+            <i class="fas fa-robot text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">任务管理</span>
+        </a>
+        <a href="student_notifications.html" class="flex flex-col items-center">
+            <i class="fas fa-bell text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">通知</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center">
+            <i class="fas fa-user text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 初始化ECharts图表
+        document.addEventListener('DOMContentLoaded', function () {
+            // 小组学习进度图表
+            const progressChartDom = document.getElementById('groupProgressChart');
+            const progressChart = echarts.init(progressChartDom);
+
+            const progressOption = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['平均完成率', '最高完成率', '最低完成率'],
+                    right: 0,
+                    top: 0,
+                    textStyle: {
+                        fontSize: 12
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                },
+                yAxis: {
+                    type: 'value',
+                    max: 100,
+                    axisLabel: {
+                        formatter: '{value} %'
+                    }
+                },
+                series: [
+                    {
+                        name: '平均完成率',
+                        type: 'line',
+                        data: [68, 72, 76, 74, 75, 72, 76],
+                        itemStyle: {
+                            color: '#3b82f6'
+                        },
+                        smooth: true
+                    },
+                    {
+                        name: '最高完成率',
+                        type: 'line',
+                        data: [85, 90, 92, 88, 95, 89, 91],
+                        itemStyle: {
+                            color: '#10b981'
+                        },
+                        smooth: true
+                    },
+                    {
+                        name: '最低完成率',
+                        type: 'line',
+                        data: [45, 47, 50, 52, 48, 42, 45],
+                        itemStyle: {
+                            color: '#f59e0b'
+                        },
+                        smooth: true
+                    }
+                ]
+            };
+
+            progressChart.setOption(progressOption);
+
+            // 学习资源使用情况图表
+            const resourceChartDom = document.getElementById('resourceUsageChart');
+            const resourceChart = echarts.init(resourceChartDom);
+
+            const resourceOption = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'horizontal',
+                    bottom: 0,
+                    data: ['视频课程', '在线练习', '电子文档', '实验项目', '论坛讨论']
+                },
+                series: [
+                    {
+                        name: '资源使用',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '14',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            { value: 35, name: '视频课程', itemStyle: { color: '#3b82f6' } },
+                            { value: 25, name: '在线练习', itemStyle: { color: '#10b981' } },
+                            { value: 20, name: '电子文档', itemStyle: { color: '#f59e0b' } },
+                            { value: 15, name: '实验项目', itemStyle: { color: '#8b5cf6' } },
+                            { value: 5, name: '论坛讨论', itemStyle: { color: '#ec4899' } }
+                        ]
+                    }
+                ]
+            };
+
+            resourceChart.setOption(resourceOption);
+
+            // 响应窗口大小变化
+            window.addEventListener('resize', function () {
+                progressChart.resize();
+                resourceChart.resize();
+            });
+        });
+    </script>
+</body>
+
+</html>

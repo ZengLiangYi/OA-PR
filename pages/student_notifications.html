@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知中心 - 教育智能OA系统</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 模拟 iOS 系统字体 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            height: 47px;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            height: 44px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        /* Tab Bar 样式 */
+        .tab-bar {
+            height: 83px;
+            /* 包含底部安全区域 */
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: 34px;
+            /* 底部安全区域 */
+        }
+
+        /* iOS 风格卡片 */
+        .ios-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            height: calc(100vh - 47px - 44px - 83px);
+            overflow-y: auto;
+        }
+
+        /* iOS 风格分段控制器 */
+        .segmented-control {
+            display: flex;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            padding: 2px;
+            margin-bottom: 16px;
+        }
+
+        .segmented-control-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #666;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .segmented-control-option.active {
+            background-color: #fff;
+            color: #000;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 通知项样式 */
+        .notification-item {
+            padding: 16px;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+        }
+
+        .notification-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #ff3b30;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: #8e8e93;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 h-full">
+    <!-- 状态栏 -->
+    <div class="status-bar px-6 flex items-center justify-between bg-white">
+        <div class="text-sm font-semibold">9:41</div>
+        <div class="flex space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar px-4 flex items-center justify-between bg-white">
+        <div class="w-8"></div>
+        <div class="font-semibold text-lg">通知中心</div>
+        <div class="w-8 text-blue-500">
+            <i class="fas fa-check-double"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content-area px-4 py-3">
+        <!-- 分段控制器: 全部/预警/系统 -->
+        <div class="segmented-control">
+            <div class="segmented-control-option active" id="all-option">全部</div>
+            <div class="segmented-control-option" id="warnings-option">预警</div>
+            <div class="segmented-control-option" id="system-option">系统</div>
+        </div>
+
+        <!-- 全部通知列表 -->
+        <div id="all-notifications">
+            <div class="ios-card mb-4">
+                <!-- 预警通知 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-500"></i>
+                        </div>
+                        <div class="notification-dot"></div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">学习进度预警</div>
+                            <div class="text-xs text-gray-500">9:30</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            你的"数据库系统"课程进度已落后预期进度20%，请尽快调整学习计划。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统通知 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-bell text-blue-500"></i>
+                        </div>
+                        <div class="notification-dot"></div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">新学习计划已生成</div>
+                            <div class="text-xs text-gray-500">昨天</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            AI助手根据你的历史学习表现，为你调整了下周的学习计划，点击查看详情。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日报提交提醒 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-file-alt text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">日报提交提醒</div>
+                            <div class="text-xs text-gray-500">昨天</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            你的昨日学习日报尚未提交，请尽快完成提交，以便生成更准确的学习计划。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 组长消息 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user-tie text-purple-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">来自组长的消息</div>
+                            <div class="text-xs text-gray-500">2天前</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            李老师对你的Java项目提出了新的建议，点击查看详细反馈。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统更新 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-sync text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">系统功能更新</div>
+                            <div class="text-xs text-gray-500">3天前</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            我们升级了AI辅助学习计划功能，现在可以根据你的实际情况动态调整每日任务难度。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 预警通知列表 -->
+        <div id="warnings-notifications" class="hidden">
+            <div class="ios-card mb-4">
+                <!-- 预警通知 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-500"></i>
+                        </div>
+                        <div class="notification-dot"></div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">学习进度预警</div>
+                            <div class="text-xs text-gray-500">9:30</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            你的"数据库系统"课程进度已落后预期进度20%，请尽快调整学习计划。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日报提交提醒 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-file-alt text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">日报提交提醒</div>
+                            <div class="text-xs text-gray-500">昨天</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            你的昨日学习日报尚未提交，请尽快完成提交，以便生成更准确的学习计划。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 任务逾期提醒 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                            <i class="fas fa-clock text-red-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">任务逾期提醒</div>
+                            <div class="text-xs text-gray-500">3天前</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            你的"计算机网络 - OSI模型概述"任务已逾期，请尽快完成并提交。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统通知列表 -->
+        <div id="system-notifications" class="hidden">
+            <div class="ios-card mb-4">
+                <!-- 系统通知 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-bell text-blue-500"></i>
+                        </div>
+                        <div class="notification-dot"></div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">新学习计划已生成</div>
+                            <div class="text-xs text-gray-500">昨天</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            AI助手根据你的历史学习表现，为你调整了下周的学习计划，点击查看详情。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 组长消息 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user-tie text-purple-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">来自组长的消息</div>
+                            <div class="text-xs text-gray-500">2天前</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            李老师对你的Java项目提出了新的建议，点击查看详细反馈。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统更新 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-sync text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">系统功能更新</div>
+                            <div class="text-xs text-gray-500">3天前</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            我们升级了AI辅助学习计划功能，现在可以根据你的实际情况动态调整每日任务难度。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学习资源更新 -->
+                <div class="notification-item">
+                    <div class="mr-3 relative">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-book text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <div class="font-medium">学习资源已更新</div>
+                            <div class="text-xs text-gray-500">5天前</div>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">
+                            你关注的"机器学习"资源库有新的学习材料已更新，包含最新的实践案例。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 Tab Bar -->
+    <div class="tab-bar flex items-center justify-around px-4">
+        <a href="student_dashboard.html" class="flex flex-col items-center">
+            <i class="fas fa-chart-bar text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">仪表盘</span>
+        </a>
+        <a href="student_daily_task.html" class="flex flex-col items-center">
+            <i class="fas fa-tasks text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">今日任务</span>
+        </a>
+        <a href="student_notifications.html" class="flex flex-col items-center">
+            <i class="fas fa-bell text-blue-500"></i>
+            <span class="text-xs mt-1 text-blue-500">通知</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center">
+            <i class="fas fa-user text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 分段控制器切换逻辑
+        const allOption = document.getElementById('all-option');
+        const warningsOption = document.getElementById('warnings-option');
+        const systemOption = document.getElementById('system-option');
+
+        const allNotifications = document.getElementById('all-notifications');
+        const warningsNotifications = document.getElementById('warnings-notifications');
+        const systemNotifications = document.getElementById('system-notifications');
+
+        allOption.addEventListener('click', function () {
+            allOption.classList.add('active');
+            warningsOption.classList.remove('active');
+            systemOption.classList.remove('active');
+
+            allNotifications.classList.remove('hidden');
+            warningsNotifications.classList.add('hidden');
+            systemNotifications.classList.add('hidden');
+        });
+
+        warningsOption.addEventListener('click', function () {
+            warningsOption.classList.add('active');
+            allOption.classList.remove('active');
+            systemOption.classList.remove('active');
+
+            warningsNotifications.classList.remove('hidden');
+            allNotifications.classList.add('hidden');
+            systemNotifications.classList.add('hidden');
+        });
+
+        systemOption.addEventListener('click', function () {
+            systemOption.classList.add('active');
+            allOption.classList.remove('active');
+            warningsOption.classList.remove('active');
+
+            systemNotifications.classList.remove('hidden');
+            allNotifications.classList.add('hidden');
+            warningsNotifications.classList.add('hidden');
+        });
+    </script>
+</body>
+
+</html>

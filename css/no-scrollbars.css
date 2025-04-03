@@ -1,0 +1,63 @@
+/* 隐藏所有滚动条 */
+* {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* 内容区域滚动条隐藏 */
+.content-area {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.content-area::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* 图表容器滚动条隐藏 */
+.chart-container {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.chart-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* 列表容器滚动条隐藏 */
+.ios-card,
+#task-list,
+.student-selector,
+#chat-history {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.ios-card::-webkit-scrollbar,
+#task-list::-webkit-scrollbar,
+.student-selector::-webkit-scrollbar,
+#chat-history::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* 保持滚动功能 */
+html,
+body {
+    overflow-y: auto;
+}
