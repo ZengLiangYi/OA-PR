@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Create a link element
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
-                link.href = '/css/no-scrollbars.css';
+                link.href = '../css/no-scrollbars.css';
 
                 // Append to the iframe's document head
                 iframe.contentDocument.head.appendChild(link);
