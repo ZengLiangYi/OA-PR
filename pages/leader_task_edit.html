@@ -280,7 +280,13 @@
 
             <!-- 学习计划 -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">学习计划内容</label>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-700">学习计划内容</label>
+                    <button class="flex items-center text-blue-500 text-sm bg-blue-50 rounded-full px-3 py-1"
+                        onclick="openAIAssistant()">
+                        <i class="fas fa-robot mr-1"></i> 智能助手
+                    </button>
+                </div>
                 <textarea class="ios-textarea" rows="6" placeholder="描述学习计划的大体内容，AI助手将据此生成详细的每日任务...">针对数据库系统原理课程，需要学习的内容包括：
 1. 关系数据库基础与SQL语法复习
 2. 数据库设计与范式理论
