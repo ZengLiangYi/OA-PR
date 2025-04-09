@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务历史 - 教育智能OA系统</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- No Scrollbars CSS -->
+    <link rel="stylesheet" href="../css/no-scrollbars.css">
+    <style>
+        /* 模拟 iOS 系统字体 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            height: 47px;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            height: 44px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        /* Tab Bar 样式 */
+        .tab-bar {
+            height: 83px;
+            /* 包含底部安全区域 */
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: 34px;
+            /* 底部安全区域 */
+        }
+
+        /* iOS 风格卡片 */
+        .ios-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 历史记录卡片 */
+        .history-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 12px;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            height: calc(100vh - 47px - 44px - 83px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 分段控制器 */
+        .segmented-control {
+            display: flex;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 2px;
+            margin: 10px 0;
+        }
+
+        .segment {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .segment.active {
+            background-color: #ffffff;
+            border-radius: 6px;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 任务状态标签 */
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background-color: #e3f6e8;
+            color: #34a853;
+        }
+
+        .status-in-progress {
+            background-color: #e7f0ff;
+            color: #0b84fe;
+        }
+
+        .status-pending {
+            background-color: #fff2e3;
+            color: #fa9000;
+        }
+
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin: 10px 0;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            outline: none;
+            flex: 1;
+            margin-left: 8px;
+            font-size: 15px;
+        }
+
+        /* 底部操作栏 */
+        .action-bar {
+            position: fixed;
+            bottom: 83px;
+            left: 0;
+            right: 0;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 h-full">
+    <!-- 状态栏 -->
+    <div class="status-bar px-6 flex items-center justify-between">
+        <div class="text-sm font-semibold">9:41</div>
+        <div class="flex space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar px-4 flex items-center justify-between">
+        <div class="w-8 text-blue-500">
+            <a href="leader_task_assign.html">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        <div class="font-semibold text-lg">历史任务</div>
+        <div class="w-8 text-blue-500">
+            <i class="fas fa-ellipsis-h"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content-area">
+        <div class="px-4 py-2">
+            <!-- 搜索栏 -->
+            <div class="search-bar">
+                <i class="fas fa-search text-gray-400"></i>
+                <input type="text" placeholder="搜索任务..." />
+            </div>
+
+            <!-- 分段控制器 -->
+            <div class="segmented-control">
+                <div class="segment active" onclick="switchTab('all')">全部</div>
+                <div class="segment" onclick="switchTab('active')">进行中</div>
+                <div class="segment" onclick="switchTab('completed')">已完成</div>
+            </div>
+
+            <!-- 历史任务列表 -->
+            <div class="mt-4 pb-20">
+                <!-- 本周 -->
+                <div class="text-sm font-medium text-gray-500 mb-2 px-1">本周</div>
+
+                <!-- 任务卡片1 -->
+                <div class="history-card p-3 bg-white" onclick="showTaskDetail(1)">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium">数据库系统原理 - 补充学习计划</div>
+                            <div class="text-xs text-gray-500 mt-1">分配给: 张立</div>
+                        </div>
+                        <div class="status-tag status-in-progress">进行中</div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div>已完成: 3/7 天</div>
+                        <div>2023-06-15</div>
+                    </div>
+                </div>
+
+                <!-- 任务卡片2 -->
+                <div class="history-card p-3 bg-white" onclick="showTaskDetail(2)">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium">Python编程 - 期末复习计划</div>
+                            <div class="text-xs text-gray-500 mt-1">分配给: 王洋, 李想, +3</div>
+                        </div>
+                        <div class="status-tag status-in-progress">进行中</div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div>已完成: 5/10 天</div>
+                        <div>2023-06-12</div>
+                    </div>
+                </div>
+
+                <!-- 上周 -->
+                <div class="text-sm font-medium text-gray-500 mb-2 mt-5 px-1">上周</div>
+
+                <!-- 任务卡片3 -->
+                <div class="history-card p-3 bg-white" onclick="showTaskDetail(3)">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium">计算机网络 - 知识点巩固</div>
+                            <div class="text-xs text-gray-500 mt-1">分配给: 全体学生</div>
+                        </div>
+                        <div class="status-tag status-completed">已完成</div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div>完成率: 92%</div>
+                        <div>2023-06-08</div>
+                    </div>
+                </div>
+
+                <!-- 任务卡片4 -->
+                <div class="history-card p-3 bg-white" onclick="showTaskDetail(4)">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium">Java高级编程 - 实践项目</div>
+                            <div class="text-xs text-gray-500 mt-1">分配给: 刘畅, 赵明, 黄佳</div>
+                        </div>
+                        <div class="status-tag status-completed">已完成</div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div>完成率: 100%</div>
+                        <div>2023-06-05</div>
+                    </div>
+                </div>
+
+                <!-- 较早 -->
+                <div class="text-sm font-medium text-gray-500 mb-2 mt-5 px-1">较早</div>
+
+                <!-- 任务卡片5 -->
+                <div class="history-card p-3 bg-white" onclick="showTaskDetail(5)">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium">算法与数据结构 - 期中复习</div>
+                            <div class="text-xs text-gray-500 mt-1">分配给: 全体学生</div>
+                        </div>
+                        <div class="status-tag status-completed">已完成</div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div>完成率: 87%</div>
+                        <div>2023-05-20</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="action-bar">
+        <button class="bg-gray-200 text-gray-700 rounded-full py-2 px-4 text-sm flex items-center"
+            onclick="filterTasks()">
+            <i class="fas fa-filter mr-1"></i>筛选
+        </button>
+        <button class="bg-blue-500 text-white rounded-full py-2 px-4 text-sm flex items-center"
+            onclick="createNewTask()">
+            <i class="fas fa-plus mr-1"></i>新建任务
+        </button>
+    </div>
+
+    <!-- 底部 Tab Bar -->
+    <div class="tab-bar flex items-center justify-around px-4">
+        <a href="leader_dashboard.html" class="flex flex-col items-center">
+            <i class="fas fa-chart-bar text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">仪表盘</span>
+        </a>
+        <a href="leader_task_assign.html" class="flex flex-col items-center">
+            <i class="fas fa-robot text-blue-500"></i>
+            <span class="text-xs mt-1 text-blue-500">任务管理</span>
+        </a>
+        <a href="student_notifications.html" class="flex flex-col items-center">
+            <i class="fas fa-bell text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">通知</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center">
+            <i class="fas fa-user text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 切换标签
+        function switchTab(tab) {
+            const segments = document.querySelectorAll('.segment');
+            segments.forEach(segment => {
+                segment.classList.remove('active');
+            });
+
+            // 激活点击的标签
+            event.currentTarget.classList.add('active');
+
+            // 这里可以添加根据标签过滤任务的逻辑
+            console.log(`Switched to ${tab} tab`);
+        }
+
+        // 显示任务详情
+        function showTaskDetail(taskId) {
+            console.log(`Showing details for task ID: ${taskId}`);
+            // 这里可以添加导航到任务详情页的逻辑
+            window.location.href = `leader_task_detail.html?id=${taskId}`;
+        }
+
+        // 筛选任务
+        function filterTasks() {
+            // 这里可以显示筛选选项的模态框
+            alert('打开筛选选项');
+        }
+
+        // 创建新任务
+        function createNewTask() {
+            // 跳转到任务创建页面
+            window.location.href = 'leader_task_assign.html';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑任务 - 教育智能OA系统</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- No Scrollbars CSS -->
+    <link rel="stylesheet" href="../css/no-scrollbars.css">
+    <style>
+        /* 模拟 iOS 系统字体 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            height: 47px;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            height: 44px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        /* Tab Bar 样式 */
+        .tab-bar {
+            height: 83px;
+            /* 包含底部安全区域 */
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: 34px;
+            /* 底部安全区域 */
+        }
+
+        /* iOS 风格卡片 */
+        .ios-card {
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            height: calc(100vh - 47px - 44px - 83px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* iOS 风格输入框 */
+        .ios-input {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            width: 100%;
+            border: none;
+            outline: none;
+        }
+
+        .ios-input:focus {
+            background-color: #e8e8e8;
+        }
+
+        /* iOS 风格文本区域 */
+        .ios-textarea {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            min-height: 120px;
+        }
+
+        .ios-textarea:focus {
+            background-color: #e8e8e8;
+        }
+
+        /* 标签组 */
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            background-color: #f1f1f1;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tag.selected {
+            background-color: #e7f0ff;
+            color: #0b84fe;
+        }
+
+        /* 日期选择器样式 */
+        .date-picker {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        /* 学生选择器 */
+        .student-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .student-chip {
+            background-color: #f1f1f1;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .student-chip.selected {
+            background-color: #e7f0ff;
+            color: #0b84fe;
+        }
+
+        /* 底部保存按钮 */
+        .save-btn {
+            position: fixed;
+            bottom: 83px;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background-color: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* 编辑日程项 */
+        .schedule-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #e8e8e8;
+        }
+
+        .schedule-day {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .schedule-content {
+            padding-left: 8px;
+            border-left: 2px solid #0b84fe;
+        }
+    </style>
+</head>
+
+<body class="bg-white h-full">
+    <!-- 状态栏 -->
+    <div class="status-bar px-6 flex items-center justify-between">
+        <div class="text-sm font-semibold">9:41</div>
+        <div class="flex space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar px-4 flex items-center justify-between">
+        <div class="w-8 text-blue-500">
+            <a href="leader_task_assign.html">
+                <i class="fas fa-times"></i>
+            </a>
+        </div>
+        <div class="font-semibold text-lg">编辑任务</div>
+        <div class="w-8 text-blue-500">
+            <a href="#" onclick="saveTask()">保存</a>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content-area">
+        <div class="px-4 py-4 pb-24">
+            <!-- 任务标题 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">任务标题</label>
+                <input type="text" class="ios-input" value="数据库系统原理 - 补充学习计划" placeholder="输入任务标题...">
+            </div>
+
+            <!-- 时间安排 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">时间安排</label>
+                <div class="flex items-center justify-between">
+                    <div class="text-sm">为期</div>
+                    <select class="bg-f1f1f1 rounded-md px-3 py-1 text-sm">
+                        <option>5天</option>
+                        <option selected>7天</option>
+                        <option>10天</option>
+                        <option>14天</option>
+                        <option>自定义</option>
+                    </select>
+                </div>
+                <div class="flex justify-between mt-3">
+                    <div class="flex-1 mr-2">
+                        <div class="text-sm">开始日期</div>
+                        <div class="date-picker">
+                            <span>2023-06-15</span>
+                            <i class="fas fa-calendar-alt text-gray-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1 ml-2">
+                        <div class="text-sm">结束日期</div>
+                        <div class="date-picker">
+                            <span>2023-06-22</span>
+                            <i class="fas fa-calendar-alt text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center mt-3">
+                    <div class="text-sm mr-3">（可选）每日学习时间</div>
+                    <select class="bg-f1f1f1 rounded-md px-3 py-1 text-sm">
+                        <option>0.5小时</option>
+                        <option>1小时</option>
+                        <option selected>1-2小时</option>
+                        <option>2-3小时</option>
+                        <option>3+小时</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 分配学生 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">分配给</label>
+                <div class="student-selector">
+                    <div class="student-chip selected" onclick="toggleStudent(this)">
+                        张立 <i class="fas fa-times-circle ml-1 text-xs"></i>
+                    </div>
+                    <div class="student-chip" onclick="toggleStudent(this)">
+                        王洋 <i class="fas fa-plus-circle ml-1 text-xs"></i>
+                    </div>
+                    <div class="student-chip" onclick="toggleStudent(this)">
+                        刘畅 <i class="fas fa-plus-circle ml-1 text-xs"></i>
+                    </div>
+                    <div class="student-chip" onclick="toggleStudent(this)">
+                        赵明 <i class="fas fa-plus-circle ml-1 text-xs"></i>
+                    </div>
+                    <div class="student-chip" onclick="toggleStudent(this)">
+                        添加更多 <i class="fas fa-ellipsis-h ml-1 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习计划 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">学习计划内容</label>
+                <textarea class="ios-textarea" rows="6" placeholder="描述学习计划的大体内容，AI助手将据此生成详细的每日任务...">针对数据库系统原理课程，需要学习的内容包括：
+1. 关系数据库基础与SQL语法复习
+2. 数据库设计与范式理论
+3. 事务处理与并发控制
+4. 索引优化技术
+5. 综合练习与知识点巩固
+
+希望AI助手根据上述内容，合理安排7天的学习计划，每天1-2小时，并适当增加练习题。</textarea>
+                <div class="mt-2 text-xs text-gray-500">AI助手将根据您提供的内容自动规划每日学习任务，并分发给学生</div>
+            </div>
+
+            <!-- 任务说明 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">备注说明（可选）</label>
+                <textarea class="ios-textarea" placeholder="添加任务说明...">针对张立同学数据库课程进度落后的情况，重点补充数据库优化相关知识</textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部保存按钮 -->
+    <div class="save-btn">
+        <button class="bg-gray-200 text-gray-700 rounded-full py-2 px-4 text-sm flex-1 mr-3" onclick="saveAsDraft()">
+            保存为草稿
+        </button>
+        <button class="bg-blue-500 text-white rounded-full py-2 px-4 text-sm flex-1" onclick="saveAndPublish()">
+            保存并发布
+        </button>
+    </div>
+
+    <!-- 底部 Tab Bar -->
+    <div class="tab-bar flex items-center justify-around px-4">
+        <a href="leader_dashboard.html" class="flex flex-col items-center">
+            <i class="fas fa-chart-bar text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">仪表盘</span>
+        </a>
+        <a href="leader_task_assign.html" class="flex flex-col items-center">
+            <i class="fas fa-robot text-blue-500"></i>
+            <span class="text-xs mt-1 text-blue-500">任务管理</span>
+        </a>
+        <a href="student_notifications.html" class="flex flex-col items-center">
+            <i class="fas fa-bell text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">通知</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center">
+            <i class="fas fa-user text-gray-400"></i>
+            <span class="text-xs mt-1 text-gray-400">我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 切换标签
+        function toggleTag(element) {
+            element.classList.toggle('selected');
+        }
+
+        // 切换学生
+        function toggleStudent(element) {
+            element.classList.toggle('selected');
+
+            // 切换图标
+            const icon = element.querySelector('i');
+            if (element.classList.contains('selected')) {
+                icon.classList.remove('fa-plus-circle');
+                icon.classList.add('fa-times-circle');
+            } else {
+                icon.classList.remove('fa-times-circle');
+                icon.classList.add('fa-plus-circle');
+            }
+        }
+
+        // 添加资源
+        function addResource() {
+            alert('打开资源添加界面');
+        }
+
+        // 删除资源
+        function removeResource(resourceId) {
+            if (confirm('确定要删除这个学习资源吗？')) {
+                alert(`已删除资源 ${resourceId}`);
+            }
+        }
+
+        // 保存任务
+        function saveTask() {
+            alert('任务已保存');
+            window.location.href = 'leader_task_assign.html';
+        }
+
+        // 保存为草稿
+        function saveAsDraft() {
+            alert('任务已保存为草稿');
+            window.location.href = 'leader_task_assign.html';
+        }
+
+        // 保存并发布
+        function saveAndPublish() {
+            alert('任务已保存并发布');
+            window.location.href = 'leader_task_assign.html';
+        }
+    </script>
+</body>
+
+</html>
